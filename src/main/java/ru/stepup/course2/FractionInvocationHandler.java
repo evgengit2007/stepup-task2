@@ -5,8 +5,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public class FractionInvocationHandler implements InvocationHandler {
-    private Object object;
-    private HashMap<String, Double> hashMap;
+    private final Object object;
+    private final HashMap<String, Double> hashMap;
 
     public FractionInvocationHandler(Object object) {
         this.object = object;
@@ -17,9 +17,17 @@ public class FractionInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         double result;
         String key = "keyHashMap";
-//        System.out.println("Before: ");
         Method m = object.getClass().getMethod(method.getName(), method.getParameterTypes());
-//        System.out.println(m.getName());
+        // перебираем аннотации в последовательности Mutator, потом Cache
+        // теперь если даже разработчик поставит во Fraction на методе doubleValue обе аннотации,
+        // или заменит Cache на Mutator, то наша прокси будет считать правильно, правда без кэширования,
+        // т.к. первой отработает Mutator
+        if (m.isAnnotationPresent(Mutator.class)) {
+            if (hashMap.containsKey(key)) {
+                hashMap.remove(key);
+            }
+            return m.invoke(object, args);
+        }
         if (m.isAnnotationPresent(Cache.class)) {
             if (hashMap.containsKey(key)) {
                 result = hashMap.get(key);
@@ -30,13 +38,6 @@ public class FractionInvocationHandler implements InvocationHandler {
             hashMap.put(key, result);
             System.out.println(result);
             return result;
-        }
-        if (m.isAnnotationPresent(Mutator.class)) {
-            if (hashMap.containsKey(key)) {
-                hashMap.remove(key);
-            }
-            System.out.println(hashMap.get(key));
-            return m.invoke(object, args);
         }
         return m.invoke(object, args);
     }
