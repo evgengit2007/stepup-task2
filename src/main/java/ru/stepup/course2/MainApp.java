@@ -7,9 +7,15 @@ public class MainApp {
         num.doubleValue(); // sout сработал
         num.doubleValue(); // sout молчит
         num.doubleValue(); // sout молчит
+        num.multiValue(); // sout сработал на multi
+        num.multiValue(); // sout молчит на multi
+        num.doubleValue(); // sout молчит
         num.setNum(5);
+        System.out.println("поменяли значение num");
         num.doubleValue(); // sout сработал
         num.doubleValue(); // sout молчит
-
+        num.multiValue(); // sout сработал на multi
+        num.multiValue(); // sout молчит на multi
+        num.doubleValue(); // sout молчит
     }
 }
