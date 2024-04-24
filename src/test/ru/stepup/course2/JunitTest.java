@@ -2,62 +2,65 @@ package ru.stepup.course2;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.*;
 
 public class JunitTest {
     @Test
-    @SneakyThrows(NullPointerException.class)
-    public void testFraction() {
-        // корректно создан экземпляр
-        Assertions.assertDoesNotThrow(() -> new Fraction(1, 2));
-        // сеттеры корректно
-        Fraction fraction = new Fraction(1, 2);
-        Assertions.assertDoesNotThrow(() -> fraction.setNum(5));
-        Assertions.assertDoesNotThrow(() -> fraction.setDenum(5));
-        // doubleValue корректно
-        Assertions.assertDoesNotThrow(() -> fraction.doubleValue());
-        // doubleValue корректно, вычисление значения
-        Assertions.assertEquals(fraction.doubleValue(), 1.00F);
-        // doubleValue исключения не будет хоть и деление на ноль
-        fraction.setDenum(0);
-        Assertions.assertDoesNotThrow(() -> fraction.doubleValue());
-        // multiValue корректно
-        Assertions.assertDoesNotThrow(() -> fraction.multiValue());
+    @DisplayName("cache without")
+    public void testWithoutCache() {
+        FractionTest fr = new FractionTest(1,2);
+        fr.doubleValue();
+        fr.doubleValue();
+        Assertions.assertEquals(fr.count, 2);
     }
 
     @Test
-    @SneakyThrows(NullPointerException.class)
-    public void testUtils() {
-        // Fractionable корректно
-        Fraction fr = new Fraction(1, 2);
-        Assertions.assertDoesNotThrow(() -> (Fractionable) Utils.cache(fr));
+    @DisplayName("cache work once")
+    public void testCacheOnce() {
+        FractionTest fr = new FractionTest(1,2);
+        Fractionable num = Utils.cache(fr);
+        num.doubleValue();
+        num.doubleValue();
+        Assertions.assertEquals(fr.count, 1);
+    }
+    @Test
+    @DisplayName("cache work twice")
+    public void testCacheTwice() {
+        FractionTest fr = new FractionTest(1,2);
+        Fractionable num = Utils.cache(fr);
+        num.doubleValue();
+        num.multiValue();
+        Assertions.assertEquals(fr.count, 2);
     }
 
     @Test
-    @SneakyThrows(NullPointerException.class)
-    public void testFractionInvocationHandler() {
-        // FractionInvocationHandler корректно
-        Fraction fr = new Fraction(1, 2);
-        Assertions.assertDoesNotThrow(() -> new FractionInvocationHandler(fr));
-        // invoke
-        // первый вызов
-        Fraction fr1 = new Fraction(1, 2);
-        Fractionable num = Utils.cache(fr1);
-        double result1 = num.doubleValue();
-        num = mock(Fractionable.class);
-        System.out.println(result1);
-        // повторный вызов из кэша
-        double result2 = num.doubleValue();
-        verify(num, times(1)).doubleValue();
+    @DisplayName("Mutator work")
+    public void testMutator() {
+        FractionTest fr = new FractionTest(1,2);
+        Fractionable num = Utils.cache(fr);
+        num.doubleValue();
+        num.doubleValue(); // данные в кеше
+        fr.setNum(4); // данные сбросились
+        num.doubleValue();
+        Assertions.assertEquals(fr.count, 1);
     }
 
     @Test
-    @SneakyThrows(NullPointerException.class)
-    public void testMainApp() {
-        // проверка запускающего модуля MainApp
-        String[] str = null;
-        Assertions.assertDoesNotThrow(() -> MainApp.main(str));
+    @DisplayName("Correct value double")
+    public void testCorrectValueDouble() {
+        FractionTest fr = new FractionTest(1,2);
+        Fractionable num = Utils.cache(fr);
+        double result = num.doubleValue();
+        Assertions.assertEquals(result, 0.5);
+    }
+
+    @Test
+    @DisplayName("Correct value multi")
+    public void testCorrectValueMulti() {
+        FractionTest fr = new FractionTest(3,2);
+        Fractionable num = Utils.cache(fr);
+        double result = num.multiValue();
+        Assertions.assertEquals(result, 6);
     }
 }
