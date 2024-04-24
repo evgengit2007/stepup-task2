@@ -25,13 +25,14 @@ public class FractionTest implements Fractionable {
     public double doubleValue() {
         System.out.println("invoke double value");
         count++;
-        return (double) num/denum;
+        return (double) num / denum;
     }
+
     @Override
     @Cache
     public double multiValue() {
         System.out.println("invoke multi value");
         count++;
-        return (double) num*denum;
+        return (double) num * denum;
     }
 }
